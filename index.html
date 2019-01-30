@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      overflow: hidden;
+    }
+
+    .piece {
+      position: absolute;
+      /* box-shadow: 0 0 0px 2px #000; */
+      z-index: 20;
+    }
+
+    .frame {
+      position: absolute;
+      top: 50%;
+      box-shadow: 0 0 0px 2px #000;
+      margin: auto;
+      left: 0;
+      right: 0;
+      z-index: 10;
+    }
+
+    .frame:before {
+      top: 5px;
+      left: 5px;
+      bottom: 5px;
+      right: 5px;
+      content: '';
+      background: #fff;
+      position: absolute;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="main.js"></script>
+</body>
+
+</html>
