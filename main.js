@@ -1,17 +1,22 @@
 var img = ['1.png', '2.jpg', '3.png'];
 
-var WIDTH = 1;
-var HEIGHT = 1;
+var WIDTH = 2;
+var HEIGHT = 2;
 var pieceSize = 150;
 var borderSize = 5;
 
 var currentDraggingPiece = null;
 var pieceOriginPosition = null;
 var clickOriginPositon = null;
+var paused = false;
 
 var frame = document.createElement('div');
 frame.classList.add('frame');
 document.body.appendChild(frame);
+
+var highlight = document.createElement('div');
+highlight.classList.add('highlight');
+document.body.appendChild(highlight);
 
 
 var bgWidth = pieceSize * WIDTH;
@@ -23,11 +28,16 @@ var grid = [];
 var imageIndex = 0;
 
 function startLevel() {
+  paused = false;
+
   bgWidth = pieceSize * WIDTH + borderSize * 2;
   bgHeight = pieceSize * HEIGHT + borderSize * 2;
 
   pieces = [];
   grid = [];
+
+  highlight.style.width = `${pieceSize}px`;
+  highlight.style.height = `${pieceSize}px`;
 
   frame.style.width = `${bgWidth}px`
   frame.style.height = `${bgHeight}px`
@@ -47,10 +57,10 @@ function startLevel() {
       piece.style.width = `${pieceSize}px`;
       piece.style.height = `${pieceSize}px`;
 
-      const randomLeft = 20 + (Math.random() * (window.innerWidth - pieceSize - 40));
+      const randomLeft = 20 + (Math.random() * (window.innerWidth / 2 - 40 - pieceSize));
       piece.style.left = `${randomLeft}px`;
 
-      const randomTop = 20 + (Math.random() * (window.innerHeight / 2 - 40 - pieceSize));
+      const randomTop = 20 + (Math.random() * (window.innerHeight - pieceSize - 40));
       piece.style.top = `${randomTop}px`;
 
       piece.style.backgroundImage = `url(${img[imageIndex]})`;
@@ -86,9 +96,11 @@ function releasePiece(piece) {
 }
 
 function pieceMouseDown(e) {
-  currentDraggingPiece = e.target;
-  releasePiece(currentDraggingPiece);
+  if (paused) return;
 
+  currentDraggingPiece = e.target;
+  currentDraggingPiece.classList.remove('dropped');
+  releasePiece(currentDraggingPiece);
 
   pieceOriginPosition = {
     x: e.target.offsetLeft,
@@ -114,6 +126,8 @@ function mouseUp(e) {
   const y = pieceOriginPosition.y + movedY;
 
   if (x < 0 || y < 0 || x > window.innerWidth - pieceSize || y > window.innerHeight - pieceSize) {
+    currentDraggingPiece.classList.add('dropped');
+
     currentDraggingPiece.style.left = `${pieceOriginPosition.x}px`;
     currentDraggingPiece.style.top = `${pieceOriginPosition.y}px`;
   }
@@ -124,32 +138,34 @@ function mouseUp(e) {
     e.clientY >= frame.offsetTop &&
     e.clientY <= frame.offsetTop + frame.clientHeight
   ) {
+    currentDraggingPiece.classList.add('dropped');
+
     var sectorX = (e.clientX - frame.offsetLeft) / pieceSize | 0;
     var sectorY = (e.clientY - frame.offsetTop) / pieceSize | 0;
 
-    currentDraggingPiece.style.left = `${frame.offsetLeft + sectorX * pieceSize + borderSize}px`;
-    currentDraggingPiece.style.top = `${frame.offsetTop + sectorY * pieceSize + borderSize}px`;
-
     if (!grid[sectorY][sectorX].piece) {
       grid[sectorY][sectorX].piece = currentDraggingPiece;
+
+      currentDraggingPiece.style.left = `${frame.offsetLeft + sectorX * pieceSize + borderSize}px`;
+      currentDraggingPiece.style.top = `${frame.offsetTop + sectorY * pieceSize + borderSize}px`;
+
     } else {
       currentDraggingPiece.style.left = `${pieceOriginPosition.x}px`;
       currentDraggingPiece.style.top = `${pieceOriginPosition.y}px`;
     }
-  } else {
-    console.log('outside');
   }
 
   if (grid.every(row => row.every(cell => cell.piece && cell.index == cell.piece.dataset.index))) {
+    paused = true;
     setTimeout(() => {
       WIDTH++;
       HEIGHT++;
-      imageIndex = (imageIndex + 1) % img.length;
-      // pieceSize = 120;
+      imageIndex = ++imageIndex % img.length;
       startLevel();
     }, 2000);
   }
 
+  highlight.classList.remove('visible');
   currentDraggingPiece = null;
 }
 
@@ -164,6 +180,18 @@ function mouseMove(e) {
 
   currentDraggingPiece.style.left = `${x}px`;
   currentDraggingPiece.style.top = `${y}px`;
+
+  var sectorX = Math.floor((e.clientX - frame.offsetLeft) / pieceSize);
+  var sectorY = Math.floor((e.clientY - frame.offsetTop) / pieceSize);
+
+  if (sectorX >= 0 && sectorX < WIDTH && sectorY >= 0 && sectorY < HEIGHT && !grid[sectorY][sectorX].piece) {
+    highlight.classList.add('visible');
+
+    highlight.style.left = `${frame.offsetLeft + sectorX * pieceSize + borderSize}px`;
+    highlight.style.top = `${frame.offsetTop + sectorY * pieceSize + borderSize}px`;
+  } else {
+    highlight.classList.remove('visible');
+  }
 }
 
 startLevel();
