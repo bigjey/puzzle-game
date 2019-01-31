@@ -1,3 +1,27 @@
+var params = {
+  w: 3,
+  h: 3,
+  draw: 0
+};
+
+if (location.search.length > 1) {
+  var queryParams = location.search
+    .substr(1)
+    .split('&')
+    .map((pair) => pair.split('='))
+    .reduce(
+      (params, [name, value]) => ((params[name] = parseInt(value)), params),
+      {}
+    );
+  Object.assign(params, queryParams);
+}
+
+var queryString = Object.keys(params)
+  .map((name) => `${name}=${params[name]}`)
+  .join('&');
+
+history.replaceState(null, null, `?${queryString}`);
+
 var img = ['1.png', '3.png', '4.jpg', '5.jpg'];
 
 img.sort(() => Math.random() - 0.5);
@@ -57,13 +81,13 @@ document.addEventListener('mouseup', mouseUp);
 document.addEventListener('mousemove', mouseMove);
 
 // DRAWING PART
-if (location.search.replace('?', '') === 'draw') {
+if (params.draw) {
   var drawCanvas = document.createElement('canvas');
   drawCanvas.classList.add('draw');
   drawCanvas.width = window.innerWidth / 1.4;
   drawCanvas.height = drawCanvas.width / (16 / 9);
   var drawContext = drawCanvas.getContext('2d');
-  drawContext.fillStyle = '#fff';
+  drawContext.fillStyle = '#f0f0f0';
   drawContext.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
   document.body.appendChild(drawCanvas);
 
@@ -72,9 +96,11 @@ if (location.search.replace('?', '') === 'draw') {
   startButton.innerText = 'Create a puzzle';
   startButton.addEventListener('click', function() {
     var image = drawCanvas.toDataURL('image/png');
-    startLevel(image);
+
     drawCanvas.remove();
     startButton.remove();
+
+    startLevel(image, params.w, params.h);
   });
   document.body.appendChild(startButton);
 
@@ -123,12 +149,12 @@ if (location.search.replace('?', '') === 'draw') {
 
 // DRAWING PART
 
-function startLevel(image = img[level]) {
+function startLevel(image = img[level], w, h) {
   var i = new Image();
   i.src = image;
   i.onload = function() {
-    WIDTH = levels[level].width;
-    HEIGHT = levels[level].height;
+    WIDTH = w || levels[level].width;
+    HEIGHT = h || levels[level].height;
 
     lastZIndex = 30;
 
