@@ -1,9 +1,12 @@
-var img = ['1.png', '2.jpg', '3.png'];
+var img = ['1.png', '3.png', '4.jpg', '5.jpg'];
+
+img.sort(() => Math.random() - 0.5);
 
 var WIDTH = 2;
 var HEIGHT = 2;
-var pieceSize = 150;
-var borderSize = 5;
+var pieceWidth = 150;
+var pieceHeight = 150;
+var borderSize = 8;
 
 var currentDraggingPiece = null;
 var pieceOriginPosition = null;
@@ -19,67 +22,117 @@ highlight.classList.add('highlight');
 document.body.appendChild(highlight);
 
 
-var bgWidth = pieceSize * WIDTH;
-var bgHeight = pieceSize * HEIGHT;
+var bgWidth;
+var bgHeight;
 
 var pieces = [];
 var grid = [];
 
-var imageIndex = 0;
+var levels = {
+  0: {
+    width: 3,
+    height: 3
+  },
+  1: {
+    width: 4,
+    height: 4
+  },
+  2: {
+    width: 5,
+    height: 4
+  },
+  3: {
+    width: 5,
+    height: 5
+  },
+  4: {
+    width: 6,
+    height: 5
+  }
+}
+
+var level = 0;
 
 function startLevel() {
-  paused = false;
+  var i = new Image();
+  i.src = img[level];
+  i.onload = function () {
+    paused = false;
 
-  bgWidth = pieceSize * WIDTH + borderSize * 2;
-  bgHeight = pieceSize * HEIGHT + borderSize * 2;
+    WIDTH = levels[level].width;
+    HEIGHT = levels[level].height;
 
-  pieces = [];
-  grid = [];
+    var aspect = i.width / i.height;
 
-  highlight.style.width = `${pieceSize}px`;
-  highlight.style.height = `${pieceSize}px`;
+    bgUrl = `url(${img[level]})`;
 
-  frame.style.width = `${bgWidth}px`
-  frame.style.height = `${bgHeight}px`
-  frame.style.backgroundImage = `url(${img[imageIndex]})`;
-  frame.style.backgroundSize = `${bgWidth}px ${bgHeight}px`;
+    bgWidth = window.innerWidth / 2.5;
+    bgHeight = bgWidth / aspect;
 
-  Array.from(document.querySelectorAll('.piece')).forEach(piece => {
-    document.body.removeChild(piece);
-  });
+    pieceWidth = bgWidth / WIDTH;
+    pieceHeight = bgHeight / HEIGHT;
 
-  for (var y = 0; y < HEIGHT; y++) {
-    grid[y] = [];
-    for (var x = 0; x < WIDTH; x++) {
-      var piece = document.createElement('div');
+    pieces = [];
+    grid = [];
 
-      piece.classList.add('piece');
-      piece.style.width = `${pieceSize}px`;
-      piece.style.height = `${pieceSize}px`;
+    highlight.style.width = `${pieceWidth}px`;
+    highlight.style.height = `${pieceHeight}px`;
 
-      const randomLeft = 20 + (Math.random() * (window.innerWidth / 2 - 40 - pieceSize));
-      piece.style.left = `${randomLeft}px`;
+    frame.style.width = `${bgWidth + borderSize * 2}px`
+    frame.style.height = `${bgHeight + borderSize * 2}px`
+    frame.style.backgroundImage = bgUrl;
+    frame.style.backgroundSize = `${bgWidth + borderSize * 2}px ${bgHeight + borderSize * 2}px`;
 
-      const randomTop = 20 + (Math.random() * (window.innerHeight - pieceSize - 40));
-      piece.style.top = `${randomTop}px`;
+    Array.from(document.querySelectorAll('.piece')).forEach(piece => {
+      document.body.removeChild(piece);
+    });
 
-      piece.style.backgroundImage = `url(${img[imageIndex]})`;
-      piece.style.backgroundSize = `${bgWidth}px ${bgHeight}px`;
-      piece.style.backgroundPosition = `${-x * pieceSize - borderSize}px ${-y * pieceSize - borderSize}px`;
+    for (var y = 0; y < HEIGHT; y++) {
+      grid[y] = [];
+      for (var x = 0; x < WIDTH; x++) {
+        var piece = document.createElement('div');
 
-      piece.dataset.index = x + y * WIDTH;
+        piece.classList.add('piece');
+        piece.style.width = `${pieceWidth}px`;
+        piece.style.height = `${pieceHeight}px`;
 
-      piece.addEventListener('mousedown', pieceMouseDown);
+        piece.style.left = `${window.innerWidth / 4}px`;
+        piece.style.top = `${window.innerHeight / 2}px`;
 
-      document.body.appendChild(piece);
-      pieces.push(piece);
+        piece.style.backgroundImage = bgUrl;
+        piece.style.backgroundSize = `${bgWidth + borderSize * 2}px ${bgHeight + borderSize * 2}px`;
+        piece.style.backgroundPosition = `${-x * pieceWidth - borderSize}px ${-y * pieceHeight - borderSize}px`;
 
-      grid[y][x] = {
-        index: x + y * WIDTH,
-        piece: null
+        piece.dataset.index = x + y * WIDTH;
+
+        piece.addEventListener('mousedown', pieceMouseDown);
+
+        document.body.appendChild(piece);
+        pieces.push(piece);
+
+        grid[y][x] = {
+          index: x + y * WIDTH,
+          piece: null
+        }
       }
     }
+
+    pieces.forEach(piece => {
+      piece.classList.add('dropped');
+      setTimeout(() => {
+        const randomLeft = 20 + (Math.random() * (window.innerWidth / 2 - 40 - pieceWidth));
+        piece.style.left = `${randomLeft}px`;
+
+        const randomTop = 20 + (Math.random() * (window.innerHeight - pieceHeight - 40));
+        piece.style.top = `${randomTop}px`;
+      }, 0);
+
+
+    })
+
+
   }
+
 }
 
 document.addEventListener('mouseup', mouseUp);
@@ -125,7 +178,7 @@ function mouseUp(e) {
   const x = pieceOriginPosition.x + movedX;
   const y = pieceOriginPosition.y + movedY;
 
-  if (x < 0 || y < 0 || x > window.innerWidth - pieceSize || y > window.innerHeight - pieceSize) {
+  if (x < 0 || y < 0 || x > window.innerWidth - pieceWidth || y > window.innerHeight - pieceHeight) {
     currentDraggingPiece.classList.add('dropped');
 
     currentDraggingPiece.style.left = `${pieceOriginPosition.x}px`;
@@ -140,14 +193,14 @@ function mouseUp(e) {
   ) {
     currentDraggingPiece.classList.add('dropped');
 
-    var sectorX = (e.clientX - frame.offsetLeft) / pieceSize | 0;
-    var sectorY = (e.clientY - frame.offsetTop) / pieceSize | 0;
+    var sectorX = Math.floor((e.clientX - frame.offsetLeft) / pieceWidth);
+    var sectorY = Math.floor((e.clientY - frame.offsetTop) / pieceHeight);
 
     if (!grid[sectorY][sectorX].piece) {
       grid[sectorY][sectorX].piece = currentDraggingPiece;
 
-      currentDraggingPiece.style.left = `${frame.offsetLeft + sectorX * pieceSize + borderSize}px`;
-      currentDraggingPiece.style.top = `${frame.offsetTop + sectorY * pieceSize + borderSize}px`;
+      currentDraggingPiece.style.left = `${frame.offsetLeft + sectorX * pieceWidth + borderSize}px`;
+      currentDraggingPiece.style.top = `${frame.offsetTop + sectorY * pieceHeight + borderSize}px`;
 
     } else {
       currentDraggingPiece.style.left = `${pieceOriginPosition.x}px`;
@@ -160,7 +213,7 @@ function mouseUp(e) {
     setTimeout(() => {
       WIDTH++;
       HEIGHT++;
-      imageIndex = ++imageIndex % img.length;
+      level = ++level % img.length;
       startLevel();
     }, 2000);
   }
@@ -181,14 +234,14 @@ function mouseMove(e) {
   currentDraggingPiece.style.left = `${x}px`;
   currentDraggingPiece.style.top = `${y}px`;
 
-  var sectorX = Math.floor((e.clientX - frame.offsetLeft) / pieceSize);
-  var sectorY = Math.floor((e.clientY - frame.offsetTop) / pieceSize);
+  var sectorX = Math.floor((e.clientX - frame.offsetLeft) / pieceWidth);
+  var sectorY = Math.floor((e.clientY - frame.offsetTop) / pieceHeight);
 
   if (sectorX >= 0 && sectorX < WIDTH && sectorY >= 0 && sectorY < HEIGHT && !grid[sectorY][sectorX].piece) {
     highlight.classList.add('visible');
 
-    highlight.style.left = `${frame.offsetLeft + sectorX * pieceSize + borderSize}px`;
-    highlight.style.top = `${frame.offsetTop + sectorY * pieceSize + borderSize}px`;
+    highlight.style.left = `${frame.offsetLeft + sectorX * pieceWidth + borderSize}px`;
+    highlight.style.top = `${frame.offsetTop + sectorY * pieceHeight + borderSize}px`;
   } else {
     highlight.classList.remove('visible');
   }
