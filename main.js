@@ -56,7 +56,72 @@ document.body.appendChild(highlight);
 document.addEventListener('mouseup', mouseUp);
 document.addEventListener('mousemove', mouseMove);
 
-startLevel();
+// DRAWING PART
+if (location.search.replace('?', '') === 'draw') {
+  var drawCanvas = document.createElement('canvas');
+  drawCanvas.classList.add('draw');
+  drawCanvas.width = window.innerWidth / 1.4;
+  drawCanvas.height = drawCanvas.width / (16 / 9);
+  var drawContext = drawCanvas.getContext('2d');
+  drawContext.fillStyle = '#fff';
+  drawContext.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+  document.body.appendChild(drawCanvas);
+
+  var startButton = document.createElement('button');
+  startButton.classList.add('start');
+  startButton.innerText = 'Create a puzzle';
+  startButton.addEventListener('click', function() {
+    var image = drawCanvas.toDataURL('image/png');
+    startLevel(image);
+    drawCanvas.remove();
+    startButton.remove();
+  });
+  document.body.appendChild(startButton);
+
+  var drawing = false;
+  var lastPos = null;
+
+  drawCanvas.addEventListener('mousedown', function(e) {
+    drawing = true;
+    lastPos = {
+      x: e.clientX,
+      y: e.clientY
+    };
+  });
+
+  drawContext.lineWidth = 10;
+  document.addEventListener('mousemove', function(e) {
+    if (!drawing) return;
+
+    drawContext.beginPath();
+
+    drawContext.moveTo(
+      lastPos.x - drawCanvas.offsetLeft,
+      lastPos.y - drawCanvas.offsetTop
+    );
+    drawContext.lineTo(
+      e.clientX - drawCanvas.offsetLeft,
+      e.clientY - drawCanvas.offsetTop
+    );
+
+    drawContext.closePath();
+    drawContext.stroke();
+    drawContext.lineCap = 'round';
+
+    lastPos = {
+      x: e.clientX,
+      y: e.clientY
+    };
+  });
+
+  document.addEventListener('mouseup', function(e) {
+    drawing = false;
+  });
+} else {
+  startLevel();
+}
+
+// DRAWING PART
 
 function startLevel(image = img[level]) {
   var i = new Image();

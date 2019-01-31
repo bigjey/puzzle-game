@@ -9,6 +9,7 @@
       * {
         margin: 0;
         padding: 0;
+        font: normal 14px Arial;
       }
 
       html,
@@ -37,6 +38,7 @@
         top: 0;
         bottom: 0;
         z-index: 10;
+        background: #f0f0f0;
       }
 
       .frame:before {
@@ -59,10 +61,39 @@
       .highlight.visible {
         display: block;
       }
+
+      .draw {
+        position: absolute;
+        box-shadow: 0 0 0px 2px #000;
+        left: 0;
+        right: 0;
+        margin: auto;
+        top: 0;
+        bottom: 50px;
+        z-index: 60;
+      }
+
+      .start {
+        padding: 10px;
+        font-size: 20px;
+        position: absolute;
+        display: block;
+        margin: auto;
+        left: 0;
+        right: 0;
+        bottom: 20px;
+        width: 200px;
+      }
+
+      a {
+        display: inline-block;
+        padding: 5px;
+      }
     </style>
   </head>
 
   <body>
+    <a href="/">Normal game</a> <a href="/?draw">Draw a puzzle</a>
     <script src="main.js"></script>
   </body>
 </html>
