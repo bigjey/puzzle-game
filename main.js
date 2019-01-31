@@ -84,7 +84,7 @@ highlight.classList.add('highlight');
 document.body.appendChild(highlight);
 
 document.addEventListener(mouseUpEvent, mouseUp);
-document.addEventListener(mouseMoveEvent, mouseMove);
+document.addEventListener(mouseMoveEvent, mouseMove, { passive: false });
 
 // DRAWING PART
 if (params.draw) {
@@ -134,6 +134,7 @@ if (params.draw) {
     if (!drawing) return;
 
     if (e instanceof TouchEvent) {
+      e.preventDefault();
       e.clientX = e.touches[0].clientX;
       e.clientY = e.touches[0].clientY;
     }
@@ -158,7 +159,9 @@ if (params.draw) {
       y: e.clientY
     };
   }
-  document.addEventListener(mouseMoveEvent, canvasMousemove);
+  document.addEventListener(mouseMoveEvent, canvasMousemove, {
+    passive: false
+  });
 
   function canvasMouseup(e) {
     drawing = false;
@@ -372,6 +375,7 @@ function mouseMove(e) {
   if (!currentDraggingPiece) return;
 
   if (e instanceof TouchEvent) {
+    e.preventDefault();
     e.clientX = e.touches[0].clientX;
     e.clientY = e.touches[0].clientY;
   }
