@@ -4,6 +4,12 @@ var params = {
   draw: 0
 };
 
+var isTouchDevice = 'ontouchstart' in window;
+
+var mouseDownEvent = isTouchDevice ? 'touchstart' : 'mousedown';
+var mouseMoveEvent = isTouchDevice ? 'touchmove' : 'mousemove';
+var mouseUpEvent = isTouchDevice ? 'touchend' : 'mouseup';
+
 if (location.search.length > 1) {
   var queryParams = location.search
     .substr(1)
@@ -77,8 +83,8 @@ var highlight = document.createElement('div');
 highlight.classList.add('highlight');
 document.body.appendChild(highlight);
 
-document.addEventListener('mouseup', mouseUp);
-document.addEventListener('mousemove', mouseMove);
+document.addEventListener(mouseUpEvent, mouseUp);
+document.addEventListener(mouseMoveEvent, mouseMove);
 
 // DRAWING PART
 if (params.draw) {
@@ -107,17 +113,30 @@ if (params.draw) {
   var drawing = false;
   var lastPos = null;
 
-  drawCanvas.addEventListener('mousedown', function(e) {
+  function canvasMousedown(e) {
+    if (e instanceof TouchEvent) {
+      e.clientX = e.touches[0].clientX;
+      e.clientY = e.touches[0].clientY;
+    }
+
     drawing = true;
     lastPos = {
       x: e.clientX,
       y: e.clientY
     };
-  });
+  }
+
+  drawCanvas.addEventListener(mouseDownEvent, canvasMousedown);
 
   drawContext.lineWidth = 10;
-  document.addEventListener('mousemove', function(e) {
+
+  function canvasMousemove(e) {
     if (!drawing) return;
+
+    if (e instanceof TouchEvent) {
+      e.clientX = e.touches[0].clientX;
+      e.clientY = e.touches[0].clientY;
+    }
 
     drawContext.beginPath();
 
@@ -138,11 +157,14 @@ if (params.draw) {
       x: e.clientX,
       y: e.clientY
     };
-  });
+  }
+  document.addEventListener(mouseMoveEvent, canvasMousemove);
 
-  document.addEventListener('mouseup', function(e) {
+  function canvasMouseup(e) {
     drawing = false;
-  });
+  }
+
+  document.addEventListener(mouseUpEvent, canvasMouseup);
 } else {
   startLevel();
 }
@@ -207,7 +229,7 @@ function startLevel(image = img[level], w, h) {
 
         piece.dataset.index = index;
 
-        piece.addEventListener('mousedown', pieceMouseDown);
+        piece.addEventListener(mouseDownEvent, pieceMouseDown);
 
         document.body.appendChild(piece);
         pieces.push(piece);
@@ -249,6 +271,11 @@ function releasePiece(piece) {
 function pieceMouseDown(e) {
   if (paused) return;
 
+  if (e instanceof TouchEvent) {
+    e.clientX = e.touches[0].clientX;
+    e.clientY = e.touches[0].clientY;
+  }
+
   currentDraggingPiece = e.target;
   currentDraggingPiece.classList.remove('dropped');
 
@@ -269,6 +296,11 @@ function pieceMouseDown(e) {
 
 function mouseUp(e) {
   if (!currentDraggingPiece) return;
+
+  if (e instanceof TouchEvent) {
+    e.clientX = e[e.touches.length ? 'touches' : 'changedTouches'][0].clientX;
+    e.clientY = e[e.touches.length ? 'touches' : 'changedTouches'][0].clientY;
+  }
 
   const movedX = e.clientX - clickOriginPositon.x;
   const movedY = e.clientY - clickOriginPositon.y;
@@ -338,6 +370,11 @@ function mouseUp(e) {
 
 function mouseMove(e) {
   if (!currentDraggingPiece) return;
+
+  if (e instanceof TouchEvent) {
+    e.clientX = e.touches[0].clientX;
+    e.clientY = e.touches[0].clientY;
+  }
 
   const movedX = e.clientX - clickOriginPositon.x;
   const movedY = e.clientY - clickOriginPositon.y;
