@@ -187,7 +187,7 @@ function startLevel(image = img[level], w, h) {
 
     bgUrl = `url(${image})`;
 
-    bgWidth = window.innerWidth / 2.5;
+    bgWidth = window.innerWidth / 1.8;
     bgHeight = bgWidth / aspect;
 
     pieceWidth = bgWidth / WIDTH;
@@ -248,7 +248,7 @@ function startLevel(image = img[level], w, h) {
       piece.classList.add('dropped');
       setTimeout(() => {
         const randomLeft =
-          20 + Math.random() * (window.innerWidth / 2 - 40 - pieceWidth);
+          20 + Math.random() * (window.innerWidth / 2.5 - 40 - pieceWidth);
         piece.style.left = `${randomLeft}px`;
 
         const randomTop =
